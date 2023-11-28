@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In Page</title>
+  <link rel="stylesheet" href="/static/auth.style.css">
+  <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+  <div class="message">Sign Successfully</div>
+  <form action="?" class="form-control" id="login_form">
+    <div class="form-wrapper">
+      <h3>GET INTO ACCOUNT</h3>
+      <h5>Log In to use the full website</h5>
+      
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="text" id="usrEmail" name="usrEmail" required  pattern=".*\S.*" />
+          <label for="usrEmail">Enter Email or Username</label>
+        </div>
+        <div class="tip" id="usrEmail-tip">Not Valid</div>
+      </div>
+
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="password" id="password" name="password" required  pattern=".*" />
+          <label for="password">Enter Password</label>
+        </div>
+        <div class="tip" id="password-tip">Not Valid</div>
+      </div>
+
+    </div>
+
+    <button type="submit" class="submit">
+      <div class="loader"></div>
+      <div>LOG IN</div>
+    </button>
+
+    <div>Not Registered Yet? <a href="/signup">Sign Up Here</a></div>
+  </form>
+
+  <script>
+
+    let local_storage;
+    
+    function handle_storage(){
+      local_storage = localStorage;
+      delete localStorage;
+    }
+    
+    handle_storage();
+
+    console.log(local_storage.getItem("refresh_token"));
+
+    if(local_storage.getItem("refresh_token")){
+      fetch("/re_token", {
+        method: "GET",
+        headers: {
+          "authorization": `bearer ${local_storage.getItem("refresh_token")}` 
+        }
+      }).then(e=>e.json()).then(e=>{
+        if(e.message=="SUCCESS"){
+          location.href = "/";
+        }
+      });
+    }
+
+    document.querySelector("#login_form").onsubmit = handleForm;
+
+    const passwordRegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    const emailRegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegExp = /^[a-zA-Z0-9_]+$/;
+
+    let regExps = {
+      password: passwordRegExp,
+      username: usernameRegExp,
+      email: emailRegExp
+    }
+
+    let flag = false;
+
+
+    function validateInputs(formData){
+      let keys = formData.keys();
+
+      for(var key of keys){
+        let tip_text = document.querySelector(`#${key}-tip`);
+        let input = document.querySelector(`#${key}`);
+
+        input.classList.remove("error-input");
+        tip_text.classList.remove("error-text");
+
+        let value = formData.get(key);
+
+        if(value.trim() == ""){
+          input.classList.add("error-input");
+          tip_text.classList.add("error-text");
+          tip_text.textContent = "Please fill the fields";
+
+          flag = true;
+        }
+
+      }
+      return flag;
+    }
+
+    async function handleForm(e){
+      e.preventDefault();
+      
+      let form_data = new FormData(e.target);
+
+      let check =  validateInputs(form_data);
+
+      if(check) return;
+
+      let message = document.querySelector(".message");
+      message.classList.remove("error-bg");
+      message.classList.remove("message-on");
+
+      let loader = document.querySelector(".loader");
+      loader.parentElement.setAttribute("disabled", "");
+      loader.classList.add("loader-on");      
+
+      try{
+
+        let data = {};
+        for(var key of form_data.keys()){
+          data[key] = form_data.get(key);
+        }
+
+        let login_data = await fetch("/log", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+  
+        login_data = await login_data.json();
+  
+        console.log(login_data);
+  
+        if(login_data.error){
+
+          message.textContent = "USER NOT  FOUND";
+          message.classList.add("error-bg");
+          message.classList.add("message-on");
+
+        }else if(login_data.message == "SUCCESS"){
+
+          message.textContent = "LOGIN SUCCESS redirecting to Dashboard";
+          message.classList.add("message-on");
+
+          local_storage.setItem("refresh_token", login_data.data);
+          location.href = "/";
+
+        }
+        
+      }catch(err){
+        
+        console.log(err);
+
+        message.textContent = "UNEXPECTED ERROR OCCURED TRY AFTER SOMETIME";
+        message.classList.add("error-bg");
+        message.classList.add("message-on");
+      }
+
+      loader.parentElement.removeAttribute("disabled");
+      loader.classList.remove("loader-on");
+
+    }
+  </script>
+</body>
+</html>

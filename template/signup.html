@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up Page</title>
+  <link rel="stylesheet" href="/static/auth.style.css">
+  <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+  <div class="message">Sign Successfully</div>
+  <form action="?" class="form-control" id="signup_form">
+    <div class="form-wrapper">
+      <h3>CREATE NEW ACCOUNT</h3>
+      <h5>Sign In to use the full website</h5>
+      
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="text" id="name" name="name" required  pattern=".*\S.*" />
+          <label for="name">Enter Name</label>
+        </div>
+        <div class="tip" id="name-tip">Not Valid</div>
+      </div>
+
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="text" id="email" name="email" required  pattern=".*\S.*" />
+          <label for="email">Enter Email</label>
+        </div>
+        <div class="tip" id="email-tip">Not Valid</div>
+      </div>
+
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="text" id="username" name="username" required  pattern="\S+" />
+          <label for="username">Enter Username</label>
+        </div>
+        <div class="tip" id="username-tip">Not Valid</div>
+      </div>
+
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="password" id="password" name="password" required  pattern=".*" />
+          <label for="password">Enter Password</label>
+        </div>
+        <div class="tip" id="password-tip">Not Valid</div>
+      </div>
+
+      <div class="secondary-wrapper">
+        <div class="form-control-div">
+          <input type="date" placeholder="Date of Birth" id="dob" name="dob" required />
+          <label class="active" for="dob">Enter Date of Birth</label>
+        </div>
+        <div class="tip" id="dob-tip">Not Valid</div>
+      </div>
+
+    </div>
+
+    <button type="submit" class="submit">
+      <div class="loader"></div>
+      <div>SIGN UP</div>
+    </button>
+
+    <div>Already a User? <a href="/login">Log In Here</a></div>
+  </form>
+
+  <script>
+    let local_storage;
+    
+    function handle_storage(){
+      local_storage = localStorage;
+      delete localStorage;
+    }
+    
+    handle_storage();
+
+    fetch("/re_token", {
+      method: "GET",
+      headers: {
+        "authorization": `bearer ${local_storage.getItem("refresh_token")}` 
+      }
+    }).then(e=>e.json()).then(e=>{
+      if(e.message=="SUCCESS"){
+        location.href = "/dashboard";
+      }
+    });
+    
+    document.querySelector("#signup_form").onsubmit = handleForm;
+
+    const passwordRegExp = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    const emailRegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const usernameRegExp = /^[a-zA-Z0-9_]+$/;
+
+    let regExps = {
+      password: passwordRegExp,
+      username: usernameRegExp,
+      email: emailRegExp
+    }
+
+    let flag = false;
+
+
+    function validateInputs(formData){
+      let keys = formData.keys();
+
+      for(var key of keys){
+        let tip_text = document.querySelector(`#${key}-tip`);
+        let input = document.querySelector(`#${key}`);
+
+        input.classList.remove("error-input");
+        tip_text.classList.remove("error-text");
+
+        let value = formData.get(key);
+
+        if(value.trim().length < 3){
+          input.classList.add("error-input");
+          tip_text.classList.add("error-text");
+          tip_text.textContent = "Value too short!!";
+
+          flag = true;
+        }
+        
+        
+        if(regExps[key] && !regExps[key].test(value)){
+          input.classList.add("error-input");
+          tip_text.classList.add("error-text");
+          tip_text.textContent = "Please fill a Valid Input";
+          
+          if(key == "password") tip_text.innerHTML = "Password must contains the following: <br> 1 Special character, 1 Lowercase Letter <br> 1 Uppercase Letter and must be 8 character long";
+          flag = true;
+        }
+
+      }
+      return flag;
+    }
+
+    async function handleForm(e){
+      e.preventDefault();
+
+      
+      let form_data = new FormData(e.target);
+
+      let check =  validateInputs(form_data);
+
+      if(check) return;
+
+      let message = document.querySelector(".message");
+      message.classList.remove("error-bg");
+      message.classList.remove("message-on");
+
+      let loader = document.querySelector(".loader");
+      loader.parentElement.setAttribute("disabled", "");
+      loader.classList.add("loader-on");      
+
+      try{
+        let data = {};
+        for(var key of form_data.keys()){
+          data[key] = form_data.get(key);
+        }
+  
+        let signup_data = await fetch("/sign", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+  
+        signup_data = await signup_data.json();
+  
+        console.log(signup_data);
+  
+        if(signup_data.error){
+          console.log(signup_data.errorMessage.split('_')[2]);
+          if(signup_data.errorMessage.split('_')[2] == 'EXISTS'){
+            let ele = signup_data.errorMessage.split('_')[1].toLowerCase();
+            console.log(`#${ele}-tip`);
+            document.querySelector(`#${ele}-tip`).classList.add("error-text");
+            document.querySelector(`#${ele}-tip`).textContent = `${signup_data.errorMessage.split('_')[1]} Already exists`;
+          }
+        }else if(signup_data.message == "SUCCESS"){
+          message.textContent = "SINGUP SUCCESS redirecting to Login";
+          message.classList.add("message-on");
+
+          location.href = "/login";
+        }
+        
+      }catch(err){
+        message.textContent = "UNEXPECTED ERROR OCCURED TRY AFTER SOMETIME";
+        message.classList.add("error-bg");
+        message.classList.add("message-on");
+      }
+
+      loader.parentElement.removeAttribute("disabled");
+      loader.classList.remove("loader-on");  
+
+
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/static/main.css">
+</head>
+<body>
+  <div class="header">
+    <div class="header-wrapper">
+      <div class="name-wrapper">Hello <span id="name">?</span></div>
+      <button type="button" class="logout" >LOG OUT</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="email_v"></div>
+    Hey <span id="name">?</span> <br>
+    Thanks for checking this website.<br>
+    Please do check my others projects on : <a target="_blank" rel="noopener noreferrer" href="https://github.com/mrinmoymondalreal">Github</a> <br />
+    or Check my <a href="http://mrinmoymondalreal.github.io/website" target="_blank" rel="noopener noreferrer">Portfolio Website</a>
+  </div>
+  <script>
+    (function(){
+      let local_storage;
+      
+      function handle_storage(){
+        local_storage = localStorage;
+        delete localStorage;
+      }
+      
+      handle_storage();
+      
+
+      if(local_storage.getItem("refresh_token")){
+        fetch("/re_token", {
+          method: "GET",
+          headers: {
+            "authorization": `bearer ${local_storage.getItem("refresh_token")}` 
+          }
+        }).then(e=>e.json()).then(e=>{
+          if(e.message=="SUCCESS"){
+            console.log(e.data);
+            document.querySelectorAll("#name").forEach(elem=>{
+              elem.textContent = e.data.name;
+            });
+
+            let txt = "You are all good!!";
+            if(e.data.verified == 0) txt = "Your Email is not verified";
+            document.querySelector(".email_v").textContent = txt;
+          }else if(e.data == "INVALID_TOKEN") location.href = "/login";
+        });
+      }else{
+        document.body.innerHTML = "OOPS!! Something Wrong";
+      }
+
+      document.querySelector(".logout").onclick = ()=>{
+        local_storage.setItem("refresh_token", null);
+        
+        fetch("/logout", {
+          method: "GET"
+        }).then(e=>{
+          location.href = "/login";
+        });
+      };
+
+    })();
+  </script>
+</body>
+</html>
