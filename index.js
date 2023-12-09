@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser')
 const path = require("path");
 const { SignUp, logIn, verifyUser } = require("./auth/sign");
 const { readFile } = require("fs");
+const { getPermissionSet } = require("./auth/user");
 
 
 const app = express();
@@ -16,16 +17,6 @@ app.use(cookieParser());
 
 app.use('/static', express.static(path.join(__dirname, "template/static")));
 
-let userMiddleware = async (req, res, next)=>{
-  // req.user = null;
-  // if(req.cookies['user']) {
-  //   let d = await verifyUser({ token: req.cookies['user'], isTemp: true });
-
-  //   if(d.message == "SUCCESS") req.user = d.data;
-  // }
-  next();
-};
-
 try{
   
   app.get("/login", (req, res)=>{
@@ -36,14 +27,24 @@ try{
     res.sendFile(path.join(__dirname, "template/signup.html"));
   });
 
-  app.get("/", userMiddleware, (req, res)=>{
-    if(req.user) return res.send(`Hello ${req.user.username}`)
+  app.get("/", (req, res)=>{
     res.sendFile(path.join(__dirname, "template/dashboard.html"));
+  });
+
+  app.get("/role", (req, res)=>{
+    res.sendFile(path.join(__dirname, "template/role.html"));
   });
   
   app.post("/sign", async (req, res)=>{
     let d = await SignUp(req.body);
     res.send(d);
+  });
+
+  app.get("/get_access", async (req, res)=>{
+    let user = await verifyUser({ token: req.cookies["user"], isTemp: true });
+    let p = await getPermissionSet(user.data.role);
+
+    res.send(p.data().p);
   });
 
   app.get('/re_token', async (req, res)=>{

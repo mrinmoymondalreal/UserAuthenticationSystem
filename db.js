@@ -142,13 +142,13 @@ const update_verify_table = (db, id)=>{
 
 const checkUsrEmail = (db, e_u)=>{
   return new Promise(res=>{
-    db.get('SELECT user_id, username, email, password, verified, name FROM users WHERE email = ? OR username = ?', [e_u, e_u], (err, row) => {
+    db.get('SELECT * FROM users WHERE email = ? OR username = ?', [e_u, e_u], (err, row) => {
       if (err) {
           throw new Error(err.message);
       }
   
       if (row) {
-        res({ data: [row.password, row.user_id, row.username, row.email, row.name, row.verified] });
+        res({ data: [row.password, row.user_id, row.username, row.email, row.name, row.verified, row.role] });
       } else {
         res({ error: 404 });
       }
@@ -173,6 +173,19 @@ const check_token = (db, tkn, user_id)=>{
         res({ error: 404 });
       }
 
+    });
+  });
+}
+
+const getUserRoleList = function(db){
+  const query = 'SELECT * FROM UserRolePermission';
+  return new Promise(res=>{
+    db.all(query, (err, rows) => {
+      if (err) {
+        console.error(err.message);
+        return;
+      }
+      res(rows);
     });
   });
 }
@@ -205,6 +218,7 @@ module.exports = {
   update_verify_table: (i) => runCmd(db=>update_verify_table(db, i)),
   checkUsrEmail: (e) => runCmd(db=>checkUsrEmail(db, e)),
   set_user_token: (e, i) => runCmd(db=>set_user_token(db, e, i)),
-  check_token: (e, i) => runCmd(db=>check_token(db, e, i))
+  check_token: (e, i) => runCmd(db=>check_token(db, e, i)),
+  getUserRoleList: (e) => runCmd(db=>getUserRoleList(db))
 }
 

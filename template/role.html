@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
   <link rel="stylesheet" href="/static/main.css">
+  <title>Document</title>
 </head>
 <body>
   <div class="header">
@@ -14,13 +14,12 @@
     </div>
   </div>
   <div class="main">
-    <div class="email_v">{check_e}</div>
-    Hey <span id="name">{name}</span> <br>
-    Thanks for checking this website.<br>
-    Please do check my others projects on : <a target="_blank" rel="noopener noreferrer" href="https://github.com/mrinmoymondalreal">Github</a> <br />
-    or Check my <a href="http://mrinmoymondalreal.github.io/website" target="_blank" rel="noopener noreferrer">Portfolio Website</a>
-    <div>Your User Role: <span class="role">{role}</span></div>
-    <a href="/role" class="btn btn-sm">Request New Role</a>
+    <div>Current Role: <span class="rn">{role}</span></div>
+    <button type="button" id="accessBtn" class="btn btn-sm">Check Access</button>
+    <div class="rn">
+      Have Access to:
+      <span id="access"></span>
+    </div>
   </div>
   <script>
     (function(){
@@ -41,15 +40,8 @@
           }
         }).then(e=>e.json()).then(e=>{
           if(e.message=="SUCCESS"){
-
-            document.querySelectorAll("#name").forEach(_=>(_.innerHTML = e.data.name));
-            
-            let txt = "You are all good!!";
-            if(e.data.verified == 0) txt = "Your Email is not verified";
-            
-            document.querySelectorAll(".email_v").forEach(_=>(_.innerHTML = txt));
-            document.querySelectorAll(".role").forEach(_=>(_.innerHTML = e.data.role));
-            
+            document.querySelector("#name").innerHTML = e.data.name;
+            document.querySelector(".rn").innerHTML = e.data.role;
           }else if(e.data == "INVALID_TOKEN") location.href = "/login";
         });
       }else{
@@ -68,6 +60,21 @@
           location.href = "/login";
         });
       };
+
+      document.querySelector("#accessBtn").onclick = function(){
+        console.log("hhhh");
+        fetch("/get_access").then(e=>e.json()).then(e=>{
+          function p(a, n){
+            return e[a] == 1 ? n + "," : "";
+          }
+          document.querySelector("#access").innerHTML = `
+            ${p("r", "Read")}
+            ${p("u", "Update")}
+            ${p("c", "Create")}
+            ${p("d", "Delete")}
+          `;
+        });
+      }
 
     })();
   </script>

@@ -47,6 +47,18 @@
   text-align: center;
 }
 
+.btn{
+  padding: 10px 12px;
+  background: #4747c9;
+  color: #fff;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.btn-sm{
+  font-size: 20px;
+}
+
 a{
   color: black;
 }

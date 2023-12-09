@@ -64,13 +64,14 @@ function logIn({ usrEmail, password }){
     if(status.error) return res(refun({ error: 404, errorMessage: "ERR_USER_NOT_FOUND:" }));
     let s = await compare(password, status.data[0]);
     if(!s) return res(refun({ error: 404, errorMessage: "ERR_USER_NOT_FOUND" }));
-    let [, user_id, username, email, name, verified] = status.data;
+    let [, user_id, username, email, name, verified, role] = status.data;
     
     let tkn_temp = jwt.sign({
         email,
         username,
         name,
-        verified
+        verified,
+        role
     }, process.env.JWT_TKN, { expiresIn: parseInt(process.env.TEMP_OUT) });
 
     let tkn = jwt.sign({
@@ -78,7 +79,8 @@ function logIn({ usrEmail, password }){
       username,
       name,
       verified,
-      user_id
+      user_id,
+      role
     }, process.env.JWT_P_TKN);
 
     db.set_user_token(tkn, user_id);
@@ -103,14 +105,15 @@ function verifyUser({ token, isTemp }){
     }else{
       try{
         let data = jwt.verify(token, process.env.JWT_TKN);
-        let { name, username, verified, email } = data;
+        let { name, username, verified, email, role } = data;
         let f = await db.check_token(token, data.user_id);
         if(f.data = true){
           let tkn_temp = jwt.sign({
             email,
             username,
             name,
-            verified
+            verified,
+            role
           }, process.env.JWT_TKN, { expiresIn: parseInt(process.env.TEMP_OUT) })
           res(refun({ data: tkn_temp, message: "SUCCESS" }));
         }else{
