@@ -23,4 +23,9 @@ export const user_model = {
     type: "string",
     len: { max: 30, min: 4 },
   },
+  password: {
+    isRequired: true,
+    type: "string",
+    len: { max: 30, min: 4 },
+  },
 };

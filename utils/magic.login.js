@@ -1,5 +1,9 @@
 import { checkmodel } from "./checker.js";
+import { magicLoginModel } from "./model.login.js";
 import { user_model } from "./user.js";
+import { dbClient } from "./common.database.js";
+import { add_verification_token, signCookie } from "./common.login.js";
+import { config } from "./common.js";
 
 export async function magicSignup(data) {
   if (!checkmodel(user_model, data)) return;
@@ -14,12 +18,12 @@ export async function magicSignup(data) {
   return rows[0];
 }
 
-export async function magicLogin({ email }) {
-  if (!checkmodel(mobLoginModel, data)) return;
+export async function magicLogin(data) {
+  if (!checkmodel(magicLoginModel, data)) return;
   if (!data.code) {
     let { rows } = await dbClient.execute(
-      `SELECT id FROM zuth_users WHERE mobile = $1 LIMIT 1`,
-      [data.mobile]
+      `SELECT id FROM zuth_users WHERE email = $1 LIMIT 1`,
+      [data.email]
     );
     if (rows.length > 0) {
       let code = new Array(6)
@@ -27,7 +31,7 @@ export async function magicLogin({ email }) {
         .map((e) => Math.abs(Math.floor(Math.random() * 9)))
         .join("");
       add_verification_token(code, rows[0].id);
-      config.sendVerification(data.mobile, code);
+      config.sendVerification(data.email, code);
       return true;
     } else return;
   }
@@ -36,9 +40,9 @@ export async function magicLogin({ email }) {
     `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
     FROM zuth_users
     JOIN tokens ON tokens.identifier = zuth_users.id
-    WHERE zuth_users.mobile = $1 AND tokens.token = $2 
+    WHERE zuth_users.email = $1 AND tokens.token = $2 
     LIMIT 1`,
-    [data.mobile, data.code]
+    [data.email, data.code]
   );
 
   if (
