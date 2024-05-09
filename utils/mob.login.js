@@ -1,11 +1,7 @@
 import { user_model } from "./user.js";
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
-import {
-  add_verification_token,
-  signCookie,
-  verifytoken,
-} from "./common.login.js";
+import { add_verification_token, signCookie } from "./common.login.js";
 import { config } from "./common.js";
 import { mobLoginModel } from "./model.login.js";
 
