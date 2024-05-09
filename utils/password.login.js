@@ -2,8 +2,7 @@ import { user_model } from "./user.js";
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
 import bcrypt from "bcrypt";
-import { add_verification_token, signCookie } from "./common.login.js";
-import { config } from "./common.js";
+import { signCookie } from "./common.login.js";
 import { passwordLoginModel } from "./model.login.js";
 
 export async function passwordSignup(data) {
@@ -43,17 +42,3 @@ export async function passwordLogin(data) {
 
   return;
 }
-
-// passwordSignup({
-//   email: "mrinmoymondalreal@gmail.com",
-//   username: "mrinmoymondal1",
-//   mobile: "7428247501",
-//   password: "Mrinmoymondal@2004",
-//   name: "Mrinmoy Mondal",
-// }).then(console.log);
-
-passwordLogin({
-  // email: "mrinmoymondalreal@gmail.com",
-  email: "mrinmoymondal1",
-  password: "Mrinmoymondal@2004",
-}).then(console.log);
