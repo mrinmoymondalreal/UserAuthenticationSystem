@@ -53,10 +53,3 @@ export async function mobLogin(data) {
 
   return;
 }
-
-// verifytoken(
-//   "d2fbdd78-db08-4fbc-aaa8-53b364e40d59",
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxOGY0YTIzLTJhNTItNTViOS0zOTNhLTA4MGE0ZTdkZTc4OCIsInVzZXJuYW1lIjoibXJpbm1veW1vbmRhbCIsImVtYWlsIjoibXJpbm1veW1vbmRhbEBnbWFpbC5jb20iLCJtb2JpbGUiOiI3NDI4MjQ3NTAwIiwibmFtZSI6Im1yaW5tb3ltb25kYWwiLCJjcmVhdGVkX2F0IjoiMjAyNC0wNS0wNVQxOTowMjo0OS42NzVaIiwibW9kaWZpZWRfYXQiOm51bGwsImlhdCI6MTcxNTEwMDkxMiwiZXhwIjoxNzE1MTAxMDEyfQ.lMKZ6qJg8gAaQM5WM58oiVbbG2w7XhdtKtNPilUgkbE"
-// ).then(console.log);
-
-// mobLogin({ mobile: "7428247500", code: "426422" }).then(console.log);

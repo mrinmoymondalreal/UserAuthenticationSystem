@@ -11,6 +11,9 @@ CREATE TABLE zuth_users (
     email VARCHAR(100) NOT NULL UNIQUE,
     mobile VARCHAR(100) NOT NULL UNIQUE,
     name VARCHAR(200) NOT NULL UNIQUE,
+    password TEXT,
+    is_email_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    is_phone_verified BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP
 );

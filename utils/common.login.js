@@ -60,3 +60,41 @@ export async function signCookie(id) {
   );
   return [eliteTkn, tmpTkn];
 }
+
+export async function verifyUser(data) {
+  if (data.type == "mobile") {
+    let { rows } = await dbClient.execute(
+      `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
+      FROM zuth_users
+      JOIN tokens ON tokens.identifier = zuth_users.id
+      WHERE zuth_users.mobile = $1 AND tokens.token = $2 
+      LIMIT 1`,
+      [data.mobile, data.code]
+    );
+
+    if (
+      rows.length > 0 &&
+      new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
+    )
+      return true;
+  }
+
+  if (data.type == "email") {
+    let { rows } = await dbClient.execute(
+      `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
+      FROM zuth_users
+      JOIN tokens ON tokens.identifier = zuth_users.id
+      WHERE zuth_users.email = $1 AND tokens.token = $2 
+      LIMIT 1`,
+      [data.email, data.code]
+    );
+
+    if (
+      rows.length > 0 &&
+      new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
+    )
+      return true;
+  }
+
+  return;
+}
