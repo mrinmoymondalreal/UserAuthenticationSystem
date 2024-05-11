@@ -1,4 +1,3 @@
-import { user_model } from "./user.js";
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
 import { add_verification_token, signCookie } from "./common.login.js";
@@ -6,12 +5,12 @@ import { config } from "./common.js";
 import { mobLoginModel } from "./model.login.js";
 
 export async function mobSignup(data) {
-  if (!checkmodel(user_model, data)) return false;
-  let keys = Object.keys(user_model);
+  if (!checkmodel(config.user_model, data)) return false;
+  let keys = Object.keys(config.user_model);
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
       .map((e, i) => `$${i + 1}`)
-      .join(",")}) RETURNING id, mobile`,
+      .join(",")}) RETURNING id`,
     keys.map((e) => data[e])
   );
 

@@ -1,17 +1,16 @@
 import { checkmodel } from "./checker.js";
 import { magicLoginModel } from "./model.login.js";
-import { user_model } from "./user.js";
 import { dbClient } from "./common.database.js";
 import { add_verification_token, signCookie } from "./common.login.js";
 import { config } from "./common.js";
 
 export async function magicSignup(data) {
-  if (!checkmodel(user_model, data)) return;
-  let keys = Object.keys(user_model);
+  if (!checkmodel(config.user_model, data)) return;
+  let keys = Object.keys(config.user_model);
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
       .map((e, i) => `$${i + 1}`)
-      .join(",")}) RETURNING id, mobile`,
+      .join(",")}) RETURNING id`,
     keys.map((e) => data[e])
   );
 

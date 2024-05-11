@@ -45,7 +45,7 @@ export async function add_verification_token(code, identifier) {
 
 export async function signCookie(id) {
   let { rows } = await dbClient.execute(
-    `SELECT * FROM zuth_users WHERE id = $1`,
+    `SELECT ${config.coloumn_in_jwt.join(",")} FROM zuth_users WHERE id = $1`,
     [id]
   );
   let user = rows[0];

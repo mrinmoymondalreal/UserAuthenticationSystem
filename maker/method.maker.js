@@ -1,4 +1,4 @@
-export function modelMethodMaker(method = [""], model) {
+export function modelMethodMaker(method, model) {
   // email/password
   if (method.includes("email/password")) {
     if (!model["email"]) model["email"] = {};
@@ -33,7 +33,7 @@ export function modelMethodMaker(method = [""], model) {
   }
 
   // magiclink
-  if (method.includes("email")) {
+  if (method.includes("magiclink")) {
     if (!model["email"]) model["email"] = {};
     Object.assign(model["email"], {
       isRequired: true,
