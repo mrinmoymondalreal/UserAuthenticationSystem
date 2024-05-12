@@ -5,20 +5,21 @@ import { config } from "./common.js";
 import { mobLoginModel } from "./model.login.js";
 
 export async function mobSignup(data) {
-  if (!checkmodel(config.user_model, data)) return 400;
+  if (!checkmodel(config.user_model, data)) return { status: 400 };
   let keys = Object.keys(config.user_model);
+  let r = await checkConflict(data);
+  if (!!r) return { status: 409, data: r };
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
       .map((e, i) => `$${i + 1}`)
       .join(",")}) RETURNING id`,
     keys.map((e) => data[e])
   );
-
-  return rows[0];
+  return { status: 200, data: rows[0] };
 }
 
 export async function mobLogin(data) {
-  if (!checkmodel(mobLoginModel, data)) return 400;
+  if (!checkmodel(mobLoginModel, data)) return { status: 400 };
   if (!data.code) {
     let { rows } = await dbClient.execute(
       `SELECT id FROM zuth_users WHERE mobile = $1 LIMIT 1`,
@@ -31,8 +32,8 @@ export async function mobLogin(data) {
         .join("");
       add_verification_token(code, rows[0].id);
       config.sendVerification(data.mobile, code);
-      return 200;
-    } else return 404;
+      return { status: 200 };
+    } else return { status: 404 };
   }
 
   let { rows } = await dbClient.execute(
@@ -48,7 +49,7 @@ export async function mobLogin(data) {
     rows.length > 0 &&
     new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
   )
-    return signCookie(rows[0].id);
+    return { status: 200, data: signCookie(rows[0].id) };
 
-  return 404;
+  return { status: 404 };
 }

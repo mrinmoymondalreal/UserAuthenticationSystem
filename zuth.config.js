@@ -1,8 +1,8 @@
 export default {
   method: ["mobile", "magiclink", "username/password", "email/password"],
   token_expireIn: 100,
-  database_url: "postgres://postgres:mrinmoymondal@localhost:5432/zuthauth",
-  token_secert: "superSecert",
+  database_url: process.env.DATABASE_URI,
+  token_secert: process.env.TOKEN_SECERT,
   user_model: {
     username: {
       len: { max: 20, min: 10 },
@@ -35,7 +35,8 @@ export default {
     },
   },
   coloumn_in_jwt: ["name", "username", "email", "mobile"],
-  sendVerification: function (mobile, code) {
+  sendVerification: function (mobile, code, type) {
     console.log(mobile, code);
   },
+  requestTimeout: 15 * 1000,
 };

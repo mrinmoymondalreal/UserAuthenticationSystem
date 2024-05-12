@@ -98,3 +98,30 @@ export async function verifyUser(data) {
 
   return 404;
 }
+
+export async function checkConflict(data) {
+  let unique = [];
+
+  for (let key in config.user_model) {
+    config.user_model[key].isUnique && unique.push(key);
+  }
+
+  let u1 = unique.map((e, i) => `${e} = $${i + 1}`);
+
+  let sql = `SELECT ${unique.join(", ")} FROM zuth_users WHERE ${u1.join(
+    " OR "
+  )}`;
+
+  let d1 = await dbClient.execute(
+    sql,
+    unique.map((e) => data[e])
+  );
+
+  if (d1.rows.length > 0)
+    return d1.rows
+      .map((e) => Object.keys(e).map((o) => e[o] == data[o] && o))
+      .flat(2)
+      .filter((e) => e);
+
+  return false;
+}
