@@ -1,21 +1,16 @@
-import { user_model } from "./user.js";
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
-import {
-  add_verification_token,
-  signCookie,
-  verifytoken,
-} from "./common.login.js";
+import { add_verification_token, signCookie } from "./common.login.js";
 import { config } from "./common.js";
 import { mobLoginModel } from "./model.login.js";
 
 export async function mobSignup(data) {
-  if (!checkmodel(user_model, data)) return false;
-  let keys = Object.keys(user_model);
+  if (!checkmodel(config.user_model, data)) return 400;
+  let keys = Object.keys(config.user_model);
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
       .map((e, i) => `$${i + 1}`)
-      .join(",")}) RETURNING id, mobile`,
+      .join(",")}) RETURNING id`,
     keys.map((e) => data[e])
   );
 
@@ -23,7 +18,7 @@ export async function mobSignup(data) {
 }
 
 export async function mobLogin(data) {
-  if (!checkmodel(mobLoginModel, data)) return;
+  if (!checkmodel(mobLoginModel, data)) return 400;
   if (!data.code) {
     let { rows } = await dbClient.execute(
       `SELECT id FROM zuth_users WHERE mobile = $1 LIMIT 1`,
@@ -36,8 +31,8 @@ export async function mobLogin(data) {
         .join("");
       add_verification_token(code, rows[0].id);
       config.sendVerification(data.mobile, code);
-      return true;
-    } else return;
+      return 200;
+    } else return 404;
   }
 
   let { rows } = await dbClient.execute(
@@ -55,12 +50,5 @@ export async function mobLogin(data) {
   )
     return signCookie(rows[0].id);
 
-  return;
+  return 404;
 }
-
-// verifytoken(
-//   "d2fbdd78-db08-4fbc-aaa8-53b364e40d59",
-//   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjAxOGY0YTIzLTJhNTItNTViOS0zOTNhLTA4MGE0ZTdkZTc4OCIsInVzZXJuYW1lIjoibXJpbm1veW1vbmRhbCIsImVtYWlsIjoibXJpbm1veW1vbmRhbEBnbWFpbC5jb20iLCJtb2JpbGUiOiI3NDI4MjQ3NTAwIiwibmFtZSI6Im1yaW5tb3ltb25kYWwiLCJjcmVhdGVkX2F0IjoiMjAyNC0wNS0wNVQxOTowMjo0OS42NzVaIiwibW9kaWZpZWRfYXQiOm51bGwsImlhdCI6MTcxNTEwMDkxMiwiZXhwIjoxNzE1MTAxMDEyfQ.lMKZ6qJg8gAaQM5WM58oiVbbG2w7XhdtKtNPilUgkbE"
-// ).then(console.log);
-
-// mobLogin({ mobile: "7428247500", code: "426422" }).then(console.log);

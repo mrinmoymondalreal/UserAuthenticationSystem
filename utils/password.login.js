@@ -1,14 +1,13 @@
-import { user_model } from "./user.js";
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
 import bcrypt from "bcrypt";
-import { add_verification_token, signCookie } from "./common.login.js";
-import { config } from "./common.js";
+import { signCookie } from "./common.login.js";
 import { passwordLoginModel } from "./model.login.js";
+import { config } from "./common.js";
 
 export async function passwordSignup(data) {
-  if (!checkmodel(user_model, data)) return false;
-  let keys = Object.keys(user_model);
+  if (!checkmodel(config.user_model, data)) return 400;
+  let keys = Object.keys(config.user_model);
 
   Object.assign(data, {
     password: await bcrypt.hash(data.password, 10),
@@ -25,12 +24,24 @@ export async function passwordSignup(data) {
 }
 
 export async function passwordLogin(data) {
-  if (!checkmodel(passwordLoginModel, data)) return;
+  if (!checkmodel(passwordLoginModel, data)) return 400;
 
   let { rows } = await dbClient.execute(
     `SELECT zuth_users.id, zuth_users.password
     FROM zuth_users
-    WHERE zuth_users.email = $1 OR zuth_users.username = $1
+    WHERE ${
+      (config.method.includes("email/password") && "zuth_users.email = $1") ||
+      ""
+    } ${
+      config.method.filter((e) => e.toLowerCase().indexOf("password") > -1)
+        .length > 0
+        ? "OR"
+        : ""
+    } ${
+      (config.method.includes("username/password") &&
+        "zuth_users.username = $1") ||
+      ""
+    }
     LIMIT 1`,
     [data.email]
   );
@@ -41,19 +52,5 @@ export async function passwordLogin(data) {
   )
     return signCookie(rows[0].id);
 
-  return;
+  return 404;
 }
-
-// passwordSignup({
-//   email: "mrinmoymondalreal@gmail.com",
-//   username: "mrinmoymondal1",
-//   mobile: "7428247501",
-//   password: "Mrinmoymondal@2004",
-//   name: "Mrinmoy Mondal",
-// }).then(console.log);
-
-passwordLogin({
-  // email: "mrinmoymondalreal@gmail.com",
-  email: "mrinmoymondal1",
-  password: "Mrinmoymondal@2004",
-}).then(console.log);

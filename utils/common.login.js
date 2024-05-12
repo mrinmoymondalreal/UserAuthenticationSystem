@@ -45,7 +45,7 @@ export async function add_verification_token(code, identifier) {
 
 export async function signCookie(id) {
   let { rows } = await dbClient.execute(
-    `SELECT * FROM zuth_users WHERE id = $1`,
+    `SELECT ${config.coloumn_in_jwt.join(",")} FROM zuth_users WHERE id = $1`,
     [id]
   );
   let user = rows[0];
@@ -59,4 +59,42 @@ export async function signCookie(id) {
     [eliteTkn, id]
   );
   return [eliteTkn, tmpTkn];
+}
+
+export async function verifyUser(data) {
+  if (data.type == "mobile") {
+    let { rows } = await dbClient.execute(
+      `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
+      FROM zuth_users
+      JOIN tokens ON tokens.identifier = zuth_users.id
+      WHERE zuth_users.mobile = $1 AND tokens.token = $2 
+      LIMIT 1`,
+      [data.mobile, data.code]
+    );
+
+    if (
+      rows.length > 0 &&
+      new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
+    )
+      return 200;
+  }
+
+  if (data.type == "email") {
+    let { rows } = await dbClient.execute(
+      `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
+      FROM zuth_users
+      JOIN tokens ON tokens.identifier = zuth_users.id
+      WHERE zuth_users.email = $1 AND tokens.token = $2 
+      LIMIT 1`,
+      [data.email, data.code]
+    );
+
+    if (
+      rows.length > 0 &&
+      new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
+    )
+      return 200;
+  }
+
+  return 404;
 }
