@@ -1,7 +1,5 @@
 import fs from "fs";
 import { modelMethodMaker } from "./method.maker.js";
-import { createTable } from "./table.maker.js";
-
 export function getConfig(model, method, database_url, token_secert) {
   let config = {};
   let user_model = modelMethodMaker(method, model);
@@ -11,6 +9,8 @@ export function getConfig(model, method, database_url, token_secert) {
     method,
     database_url,
     token_secert,
+    coloumn_in_jwt: ["name", "username", "email"],
+    sendVerification: function (provider, code, type) {},
   });
 
   fs.writeFile(
@@ -18,9 +18,6 @@ export function getConfig(model, method, database_url, token_secert) {
     "export default " + JSON.stringify(config, null, 2),
     (err) => (err ? console.log(err) : console.log("Done"))
   );
-
-  console.log(JSON.stringify(config, null, 3));
-  console.log(createTable(model));
 }
 
 getConfig(

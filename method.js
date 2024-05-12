@@ -28,5 +28,5 @@ export async function login(data) {
       if (method != "magiclink") return await magicLogin(data);
   }
 
-  return;
+  return 400;
 }

@@ -6,7 +6,7 @@ import { passwordLoginModel } from "./model.login.js";
 import { config } from "./common.js";
 
 export async function passwordSignup(data) {
-  if (!checkmodel(config.user_model, data)) return false;
+  if (!checkmodel(config.user_model, data)) return 400;
   let keys = Object.keys(config.user_model);
 
   Object.assign(data, {
@@ -24,7 +24,7 @@ export async function passwordSignup(data) {
 }
 
 export async function passwordLogin(data) {
-  if (!checkmodel(passwordLoginModel, data)) return;
+  if (!checkmodel(passwordLoginModel, data)) return 400;
 
   let { rows } = await dbClient.execute(
     `SELECT zuth_users.id, zuth_users.password
@@ -52,5 +52,5 @@ export async function passwordLogin(data) {
   )
     return signCookie(rows[0].id);
 
-  return;
+  return 404;
 }

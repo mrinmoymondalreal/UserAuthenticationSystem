@@ -5,7 +5,7 @@ import { config } from "./common.js";
 import { mobLoginModel } from "./model.login.js";
 
 export async function mobSignup(data) {
-  if (!checkmodel(config.user_model, data)) return false;
+  if (!checkmodel(config.user_model, data)) return 400;
   let keys = Object.keys(config.user_model);
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
@@ -18,7 +18,7 @@ export async function mobSignup(data) {
 }
 
 export async function mobLogin(data) {
-  if (!checkmodel(mobLoginModel, data)) return;
+  if (!checkmodel(mobLoginModel, data)) return 400;
   if (!data.code) {
     let { rows } = await dbClient.execute(
       `SELECT id FROM zuth_users WHERE mobile = $1 LIMIT 1`,
@@ -31,8 +31,8 @@ export async function mobLogin(data) {
         .join("");
       add_verification_token(code, rows[0].id);
       config.sendVerification(data.mobile, code);
-      return true;
-    } else return;
+      return 200;
+    } else return 404;
   }
 
   let { rows } = await dbClient.execute(
@@ -50,5 +50,5 @@ export async function mobLogin(data) {
   )
     return signCookie(rows[0].id);
 
-  return;
+  return 404;
 }

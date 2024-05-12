@@ -43,5 +43,10 @@ export default {
     "mobile"
   ],
   "database_url": "hello",
-  "token_secert": "tokenSecert"
+  "token_secert": "tokenSecert",
+  "coloumn_in_jwt": [
+    "name",
+    "username",
+    "email"
+  ]
 }

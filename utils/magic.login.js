@@ -5,7 +5,7 @@ import { add_verification_token, signCookie } from "./common.login.js";
 import { config } from "./common.js";
 
 export async function magicSignup(data) {
-  if (!checkmodel(config.user_model, data)) return;
+  if (!checkmodel(config.user_model, data)) return 400;
   let keys = Object.keys(config.user_model);
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
@@ -18,7 +18,7 @@ export async function magicSignup(data) {
 }
 
 export async function magicLogin(data) {
-  if (!checkmodel(magicLoginModel, data)) return;
+  if (!checkmodel(magicLoginModel, data)) return 400;
   if (!data.code) {
     let { rows } = await dbClient.execute(
       `SELECT id FROM zuth_users WHERE email = $1 LIMIT 1`,
@@ -31,8 +31,8 @@ export async function magicLogin(data) {
         .join("");
       add_verification_token(code, rows[0].id);
       config.sendVerification(data.email, code);
-      return true;
-    } else return;
+      return 200;
+    } else return 404;
   }
 
   let { rows } = await dbClient.execute(
@@ -50,5 +50,5 @@ export async function magicLogin(data) {
   )
     return signCookie(rows[0].id);
 
-  return;
+  return 404;
 }

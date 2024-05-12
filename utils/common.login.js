@@ -76,7 +76,7 @@ export async function verifyUser(data) {
       rows.length > 0 &&
       new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
     )
-      return true;
+      return 200;
   }
 
   if (data.type == "email") {
@@ -93,8 +93,8 @@ export async function verifyUser(data) {
       rows.length > 0 &&
       new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
     )
-      return true;
+      return 200;
   }
 
-  return;
+  return 404;
 }
