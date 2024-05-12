@@ -1,17 +1,20 @@
 import { checkmodel } from "./checker.js";
 import { dbClient } from "./common.database.js";
 import bcrypt from "bcrypt";
-import { signCookie } from "./common.login.js";
+import { checkConflict, signCookie } from "./common.login.js";
 import { passwordLoginModel } from "./model.login.js";
 import { config } from "./common.js";
 
 export async function passwordSignup(data) {
-  if (!checkmodel(config.user_model, data)) return 400;
+  if (!checkmodel(config.user_model, data)) return { status: 400 };
   let keys = Object.keys(config.user_model);
 
   Object.assign(data, {
     password: await bcrypt.hash(data.password, 10),
   });
+
+  let r = await checkConflict(data);
+  if (!!r) return { status: 409, data: r };
 
   let { rows } = await dbClient.execute(
     `INSERT INTO zuth_users (${keys.join(",")}) VALUES (${keys
@@ -20,11 +23,11 @@ export async function passwordSignup(data) {
     keys.map((e) => data[e])
   );
 
-  return rows[0];
+  return { status: 200, data: rows[0] };
 }
 
 export async function passwordLogin(data) {
-  if (!checkmodel(passwordLoginModel, data)) return 400;
+  if (!checkmodel(passwordLoginModel, data)) return { status: 400 };
 
   let { rows } = await dbClient.execute(
     `SELECT zuth_users.id, zuth_users.password
@@ -50,7 +53,7 @@ export async function passwordLogin(data) {
     rows.length > 0 &&
     (await bcrypt.compare(data.password, rows[0].password))
   )
-    return signCookie(rows[0].id);
+    return { status: 200, data: signCookie(rows[0].id) };
 
-  return 404;
+  return { status: 404 };
 }
