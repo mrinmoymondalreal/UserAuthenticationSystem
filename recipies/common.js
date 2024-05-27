@@ -48,7 +48,7 @@ async function add_verification_token(code, identifier) {
 // done
 async function signCookie(id) {
   let { rows } = await dbClient.execute(
-    `SELECT * FROM zuth_users WHERE id = $1`,
+    `SELECT * FROM ${config.table} WHERE id = $1`,
     [id]
   );
   let user = rows[0];

@@ -18,25 +18,28 @@ async function magicSignup(data) {
   return rows[0].id;
 }
 
-async function magicLogin(data) {
+async function magicLogin(data, isforverify = false) {
   if (!check(magic, data)) return { status: 400 };
   if (!data.code) {
     let { rows } = await dbClient.execute(
       `SELECT id FROM ${config.table} WHERE email = $1 LIMIT 1`,
       [data.email]
     );
-    if (rows.length == 0) rows = [{ id: await magicSignup(data) }];
-    // let code = randomIntInRange(100000, 999999);
-    let code = crypto.randomUUID();
-    add_verification_token(code, rows[0].id);
-    config.sendVerification(data.email, code, "emailMagicLink");
-    return { status: 200 };
+    console.log(rows.length);
+    if (rows.length == 0 && !isforverify)
+      rows = [{ id: await magicSignup(data) }];
+    if (rows[0]) {
+      let code = crypto.randomUUID();
+      add_verification_token(code, rows[0].id);
+      config.sendVerification(data.email, code, "emailMagicLink");
+      return { status: 200 };
+    }
   }
 
   let { rows } = await dbClient.execute(
-    `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
-    FROM zuth_users
-    JOIN tokens ON tokens.identifier = zuth_users.id
+    `SELECT ${config.table}.id, tokens.identifier, tokens.expiration_time 
+    FROM ${config.table}
+    JOIN tokens ON tokens.identifier = ${config.table}.id
     WHERE tokens.token = $1 
     LIMIT 1`,
     [data.code]
@@ -45,8 +48,14 @@ async function magicLogin(data) {
   if (
     rows.length > 0 &&
     new Date(rows[0].expiration_time).getTime() - new Date().getTime() > 0
-  )
+  ) {
+    await dbClient.execute(
+      `UPDATE ${config.table} SET is_email_verified = true WHERE id = $1`,
+      [rows[0].id]
+    );
+    if (isforverify) return { status: 200 };
     return { status: 200, data: await signCookie(rows[0].id) };
+  }
 
   return { status: 404 };
 }
