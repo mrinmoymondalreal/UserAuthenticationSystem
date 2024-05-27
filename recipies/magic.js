@@ -26,9 +26,10 @@ async function magicLogin(data) {
       [data.email]
     );
     if (rows.length == 0) rows = [{ id: await magicSignup(data) }];
-    let code = randomIntInRange(100000, 999999);
+    // let code = randomIntInRange(100000, 999999);
+    let code = crypto.randomUUID();
     add_verification_token(code, rows[0].id);
-    config.sendVerification(data.email, code);
+    config.sendVerification(data.email, code, "emailMagicLink");
     return { status: 200 };
   }
 
@@ -36,9 +37,9 @@ async function magicLogin(data) {
     `SELECT zuth_users.id, tokens.identifier, tokens.expiration_time 
     FROM zuth_users
     JOIN tokens ON tokens.identifier = zuth_users.id
-    WHERE zuth_users.email = $1 AND tokens.token = $2 
+    WHERE tokens.token = $1 
     LIMIT 1`,
-    [data.email, data.code]
+    [data.code]
   );
 
   if (
@@ -50,6 +51,4 @@ async function magicLogin(data) {
   return { status: 404 };
 }
 
-magicLogin({ email: "mrinmoymondal09@gmail.com", code: "245210" }).then(
-  console.log
-);
+module.exports = magicLogin;

@@ -27,7 +27,7 @@ async function mobLogin(data) {
     if (rows.length == 0) rows = [{ id: await mobSignup(data) }];
     let code = randomIntInRange(100000, 999999);
     add_verification_token(code, rows[0].id);
-    config.sendVerification(data.mobile, code);
+    config.sendVerification(data.mobile, code, "mobileVerification");
     return { status: 200 };
   }
 
@@ -48,3 +48,5 @@ async function mobLogin(data) {
 
   return { status: 404 };
 }
+
+module.exports = mobLogin;
