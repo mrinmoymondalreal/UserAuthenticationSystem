@@ -2,6 +2,8 @@ const express = require("express");
 const app = express.Router();
 const mobLogin = require("./recipies/mob.js");
 const magicLogin = require("./recipies/magic.js");
+const { config } = require("./common.js");
+const { passwordLogin } = require("./recipies/password.js");
 
 app.post("/login", async (req, res) => {
   try {
@@ -9,11 +11,14 @@ app.post("/login", async (req, res) => {
       data = req.body;
     switch (data.type) {
       case "mobile":
-        resp = await mobLogin(data);
+        if (config.recipies.includes("mobile")) resp = await mobLogin(data);
         break;
       case "magic":
-        resp = await magicLogin(data);
+        if (config.recipies.includes("magic")) resp = await magicLogin(data);
         break;
+      case "password":
+        if (config.recipies.includes("password"))
+          resp = await passwordLogin(data);
       default:
         break;
     }
@@ -25,7 +30,7 @@ app.post("/login", async (req, res) => {
       ]);
     }
 
-    res.status(resp.status);
+    res.status(resp.status || 400);
     res.end();
   } catch (err) {
     res.status(500).send(err.toString());
@@ -45,6 +50,18 @@ app.get("/magiclogin", async (req, res) => {
   }
   res.status(resp.status);
   res.end();
+});
+
+app.post("/signup", async (req, res) => {
+  try {
+    let resp,
+      data = req.body;
+    if (config.recipies.includes("password")) resp = await passwordLogin(data);
+    res.status(resp.status || 400);
+    res.end();
+  } catch (err) {
+    res.status(500).send(err.toString());
+  }
 });
 
 module.exports = app;

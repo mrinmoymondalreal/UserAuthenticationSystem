@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const { configDotenv } = require("dotenv");
 configDotenv();
 
