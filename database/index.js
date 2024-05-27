@@ -1,7 +1,4 @@
-import { config } from "./common.js";
-import pg from "pg";
-
-let { Pool } = pg;
+const { Pool } = require("pg");
 
 function DatabaseClient(config) {
   this.pool = new Pool(config);
@@ -16,6 +13,6 @@ DatabaseClient.prototype.getClient = async function () {
   return await this.pool.connect();
 };
 
-export let dbClient = new DatabaseClient({
-  connectionString: config.database_url,
+module.exports = new DatabaseClient({
+  connectionString: process.env.AUTH_DATABASE_URI,
 });
