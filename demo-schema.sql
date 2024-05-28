@@ -5,7 +5,7 @@ CREATE OR REPLACE FUNCTION generate_ulid() RETURNS uuid
         SELECT (lpad(to_hex(floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint), 12, '0') || encode(gen_random_bytes(10), 'hex'))::uuid;
     $$ LANGUAGE SQL;
 
-CREATE TABLE zuth_users (
+CREATE TABLE users (
     id TEXT PRIMARY KEY DEFAULT generate_ulid(),
     username  VARCHAR(50) DEFAULT NULL,
     email VARCHAR(100) DEFAULT NULL,

@@ -6,11 +6,13 @@ configDotenv();
 const express = require("express");
 const app = express();
 const router = require("./router.js");
+const cookieParser = require("cookie-parser");
 
 const PORT = process.env.AUTH_PORT || 3131;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(router);
 
 app.get("/", (req, res) => res.send("test pass"));
