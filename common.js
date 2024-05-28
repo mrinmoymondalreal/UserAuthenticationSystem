@@ -1,5 +1,7 @@
+const path = require("path");
+
 const items = {
-  config: require("./config.js"),
+  config: require(path.join(process.cwd(), "config.js")) || require("./config"),
   isDef: (e) => !(e == undefined || e == null),
   check: (model, data) => {
     if (!(items.isDef(data) && data instanceof Object)) return false;

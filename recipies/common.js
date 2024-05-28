@@ -53,6 +53,7 @@ async function signCookie(id) {
   );
   let user = rows[0];
   Object.assign(user, { id });
+  delete user.password;
   let tmpTkn = jwt.sign(user, process.env.AUTH_JWT_TOKEN, {
     expiresIn: config.token_expireIn,
   });

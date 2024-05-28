@@ -1,10 +1,15 @@
 const { verifytoken } = require("./recipies/common");
 
-function verifyUser(req, res) {
-  if (req.cookies && req.cookies.refaccess && req.cookies.usraccess)
-    return res.next();
-  req.user = verifytoken(req.cookies.refaccess, req.cookies.usraccess);
-  res.next();
+async function verifyUser(req, res, next) {
+  if (!(req.cookies && req.cookies.refaccess && req.cookies.usraccess))
+    return next();
+  console.log(req.cookies.refaccess, req.cookies.usraccess);
+  req.user = await verifytoken(req.cookies.refaccess, req.cookies.usraccess);
+  res.setHeader("set-cookie", [
+    `usraccess=${req.user[1]}; Path=/; HttpOnly; Secure;`,
+  ]);
+  req.user = req.user[0];
+  next();
 }
 
 module.exports = {
