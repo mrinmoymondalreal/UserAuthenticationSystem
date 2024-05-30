@@ -12,6 +12,15 @@ async function verifyUser(req, res, next) {
   next();
 }
 
+async function checkAccountCompletionStatus(route) {
+  return (req, res, next) => {
+    if (!req.user) return next();
+    if (req.user.is_account_done) return res.redirect(route);
+    next();
+  };
+}
+
 module.exports = {
   verifyUser,
+  checkAccountCompletionStatus,
 };

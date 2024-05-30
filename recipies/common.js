@@ -46,7 +46,7 @@ async function add_verification_token(code, identifier) {
 }
 
 // done
-async function signCookie(id) {
+async function signCookie(id, isReplacement = false) {
   let { rows } = await dbClient.execute(
     `SELECT * FROM ${config.table} WHERE id = $1`,
     [id]
@@ -57,16 +57,31 @@ async function signCookie(id) {
   let tmpTkn = jwt.sign(user, process.env.AUTH_JWT_TOKEN, {
     expiresIn: config.token_expireIn,
   });
-  let eliteTkn = uuid();
-  await dbClient.execute(
-    `INSERT INTO tokens(token, identifier, type) VALUES($1, $2, 'elite')`,
-    [eliteTkn, id]
-  );
+  let eliteTkn;
+  if (!isReplacement) {
+    eliteTkn = uuid();
+    await dbClient.execute(
+      `INSERT INTO tokens(token, identifier, type) VALUES($1, $2, 'elite')`,
+      [eliteTkn, id]
+    );
+  }
   return [eliteTkn, tmpTkn];
+}
+
+async function logout(eliteTkn, tkn) {
+  let result = await verifytoken(eliteTkn, tkn);
+  if (result && result[0]) {
+    await dbClient.execute(
+      `DELETE FROM ${config.table} WHERE id = $1 AND token = $2 AND type = 'elite'`,
+      [result.id, tkn]
+    );
+  }
+  return { status: true };
 }
 
 module.exports = {
   signCookie,
   verifytoken,
   add_verification_token,
+  logout,
 };

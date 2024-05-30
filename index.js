@@ -1,5 +1,6 @@
-const { verifyUser } = require("./middleware");
-const { verifytoken } = require("./recipies/common");
+const { verifyUser, checkAccountCompletionStatus } = require("./middleware");
+const { addToDetails } = require("./recipies/addToDatabase");
+const { verifytoken, logout } = require("./recipies/common");
 const magicLogin = require("./recipies/magic");
 const mobLogin = require("./recipies/mob");
 const { passwordLogin, passwordSignup } = require("./recipies/password");
@@ -13,4 +14,7 @@ module.exports = {
   passwordLogin,
   passwordSignup,
   verifytoken,
+  logout,
+  addToDetails,
+  checkAccountCompletionStatus,
 };

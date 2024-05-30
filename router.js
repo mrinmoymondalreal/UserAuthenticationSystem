@@ -4,6 +4,9 @@ const mobLogin = require("./recipies/mob.js");
 const magicLogin = require("./recipies/magic.js");
 const { config } = require("./common.js");
 const { passwordLogin, passwordSignup } = require("./recipies/password.js");
+const { logout } = require("./recipies/common.js");
+const { addToDetails } = require("./recipies/addToDatabase.js");
+const { verifyUser } = require("./middleware.js");
 
 app.post("/login", async (req, res) => {
   try {
@@ -75,6 +78,16 @@ app.post("/verify_email", async (req, res) => {
   }
 });
 
+app.get("/logout", async (req, res) => {
+  await logout(req.cookies.refaccess, req.cookies.usraccess);
+  res.setHeader("set-cookie", [
+    "usraccess=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+    "refaccess=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;",
+  ]);
+  res.status(200);
+  res.end();
+});
+
 app.post("/verify_mobile", async (req, res) => {
   try {
     let queries = req.body;
@@ -85,6 +98,15 @@ app.post("/verify_mobile", async (req, res) => {
   } catch (err) {
     res.status(500).send(err.toString());
   }
+});
+
+app.post("/add_details", verifyUser, async (req, res) => {
+  let data = req.body;
+  let resp = await addToDetails(data, req.user.id);
+  if (resp.status == 200) {
+    res.setHeader("set-cookie", ["usraccess=" + resp.data[1]]);
+  }
+  res.status(resp.status).end();
 });
 
 module.exports = app;
