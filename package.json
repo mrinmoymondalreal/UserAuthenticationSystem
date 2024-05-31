@@ -20,5 +20,8 @@
   },
   "bin": {
     "UserAuthenticationSystem": "server.js"
+  },
+  "devDependencies": {
+    "inquirer": "^9.2.22"
   }
 }
